@@ -33,8 +33,8 @@ public class EmailController {
     }
 
     @PostMapping("/criar")
-    public ResponseEntity<Email> createEmail(@RequestBody Email email) {
-        Email savedEmail = emailService.salvar(email);
+    public ResponseEntity<Email> createEmail(@RequestBody Email email, @RequestParam Long userId) {
+        Email savedEmail = emailService.salvar(email, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedEmail);
     }
 
