@@ -49,4 +49,11 @@ public class EmailController {
         emailService.deletar(id);
         return ResponseEntity.noContent().build();
     }
+
+    //enviar email para o destinatario
+    @PostMapping("/enviar/{emailId}")
+    public ResponseEntity<Void> enviarEmail(@PathVariable Long emailId) {
+        emailService.enviarEmail(emailId);
+        return ResponseEntity.ok().build();
+    }
 }

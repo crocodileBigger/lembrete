@@ -16,8 +16,8 @@ public class Email {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "desinatario")
-  private String desinatario;
+  @Column(name = "destinatario")
+  private String destinatario;
 
   @Column(name = "assunto")
   private String assunto;
@@ -31,8 +31,8 @@ public class Email {
   public Email() {
   }
 
-  public Email(String desinatario, String assunto, String mensagem, Long userId) {
-    this.desinatario = desinatario;
+  public Email(String destinatario, String assunto, String mensagem, Long userId) {
+    this.destinatario = destinatario;
     this.assunto = assunto;
     this.mensagem = mensagem;
     this.userId = userId;
@@ -46,12 +46,12 @@ public class Email {
     this.id = id;
   }
 
-  // Getters e Setters desinatario
-  public String getDesinatario() {
-    return desinatario;
+  // Getters e Setters destinatario
+  public String getDestinatario() {
+    return destinatario;
   }
-  public void setDesinatario(String desinatario) {
-    this.desinatario = desinatario;
+  public void setDestinatario(String destinatario) {
+    this.destinatario = destinatario;
   }
 
   // Getters e Setters assunto
