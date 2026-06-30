@@ -56,4 +56,11 @@ public class EmailController {
         emailService.enviarEmail(emailId);
         return ResponseEntity.ok().build();
     }
+
+    //agendar email existente para o destinatario basiado no ID
+    @PostMapping("/agendar/{emailId}")
+    public ResponseEntity<Void> agendarEmail(@PathVariable Long emailId) {
+        emailService.agendarEmail(emailId);
+        return ResponseEntity.ok().build();
+    }
 }

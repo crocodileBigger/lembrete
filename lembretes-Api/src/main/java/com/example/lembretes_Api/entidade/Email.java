@@ -2,12 +2,17 @@ package com.example.lembretes_Api.entidade;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn; 
+
+import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Email")
@@ -25,6 +30,9 @@ public class Email {
   @Column(name = "mensagem")
   private String mensagem;
 
+  @Column(name = "agendamento")
+  private LocalDateTime agendamento;
+
   @ManyToOne
   @JoinColumn(name = "user_id", nullable = false)
   private Usuario usuario;
@@ -33,10 +41,11 @@ public class Email {
   }
 
   // Construtor atualizado recebendo o objeto Usuario
-  public Email(String destinatario, String assunto, String mensagem, Usuario usuario) {
+  public Email(String destinatario, String assunto, String mensagem,LocalDateTime agendamento, Usuario usuario) {
     this.destinatario = destinatario;
     this.assunto = assunto;
     this.mensagem = mensagem;
+    this.agendamento = agendamento;
     this.usuario = usuario;
   }
 
@@ -59,4 +68,9 @@ public class Email {
   // Getters e Setters de usuario
   public Usuario getUsuario() { return usuario; }
   public void setUsuario(Usuario usuario) { this.usuario = usuario; }
+
+  // Getters e Setters de agendamento
+  public LocalDateTime getAgendamento() { return agendamento; }
+  public void setAgendamento(LocalDateTime agendamento) { this.agendamento = agendamento; }
+
 }
