@@ -20,7 +20,7 @@ public class UsuarioController {
     // Pegar um usuario por id
     @GetMapping("/{id}")
     public ResponseEntity<Usuario> getUsuarioById(@PathVariable Long id) {
-        return usuarioService.findById(id)
+        return usuarioService.pegarPorId(id)
                 .map(usuario -> ResponseEntity.ok(usuario))
                 .orElse(ResponseEntity.notFound().build()); // Retorna 404 se não existir
     }
@@ -28,28 +28,28 @@ public class UsuarioController {
     // Pegar todos os usuarios
     @GetMapping("/all")
     public ResponseEntity<List<Usuario>> getAllUsuarios() {
-        List<Usuario> usuarios = usuarioService.findAll();
+        List<Usuario> usuarios = usuarioService.pegarTodos();
         return ResponseEntity.ok(usuarios);
     }
 
     // Criar um usuario
     @PostMapping("/criar")
     public ResponseEntity<Usuario> createUsuario(@RequestBody Usuario usuario) {
-        Usuario savedUsuario = usuarioService.save(usuario);
+        Usuario savedUsuario = usuarioService.salvar(usuario);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUsuario);
     }
 
     // Atualizar um usuario
     @PutMapping("/{id}")
     public ResponseEntity<Usuario> updateUsuario(@PathVariable Long id, @RequestBody Usuario usuario) {
-        Usuario updatedUsuario = usuarioService.update(id, usuario);
+        Usuario updatedUsuario = usuarioService.atualizar(id, usuario);
         return ResponseEntity.ok(updatedUsuario);
     }
 
     // Deletar um usuario
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUsuario(@PathVariable Long id) {
-        usuarioService.deleteById(id);
+        usuarioService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

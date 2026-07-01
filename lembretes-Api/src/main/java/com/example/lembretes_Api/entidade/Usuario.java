@@ -17,7 +17,8 @@ public class Usuario {
   @Column(name = "name")
   private String name;
 
-  @Column(name = "email")
+  // email tem que ser unico na tabela
+  @Column(name = "email", nullable = false, unique = true)
   private String email;
 
   @Column(name = "password")
