@@ -1,5 +1,6 @@
 package com.example.lembretes_Api.service;
 
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.SimpleMailMessage;
@@ -35,11 +36,13 @@ public class EmailService {
     }
 
     // Buscar todos os emails de um usuario
+    @Transactional
     public List<Email> buscarPorUsuarioId(Long userId) {
         return emailRepository.findByUsuarioId(userId);
     }
 
     // Salvar um email
+    @Transactional
     public Email salvar(Email email, Long userId) {
         Usuario usuario = usuarioRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("Usuário nao encontrado"));
@@ -49,6 +52,7 @@ public class EmailService {
     }
 
     // CORREÇÃO 1: Usando o nome correto da variável (emailAtualizado) de forma segura
+    @Transactional
     public Email atualizar(Long id, Email emailAtualizado) {
         Email emailExistente = emailRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Email não encontrado para o ID: " + id));
@@ -62,11 +66,13 @@ public class EmailService {
     }
 
     // CORREÇÃO 2: Retornando ao seu método original que não gera erros na linha 66
+    @Transactional
     public void deletar(Long id) {
         emailRepository.deleteById(id);
     }
     
     // Enviar o email usando o JavaMailSender
+    @Transactional
     public void enviarEmail(Long emailId) {
        Email email = emailRepository.findById(emailId)
            .orElseThrow(() -> new IllegalArgumentException("Email não encontrado para o ID"));
@@ -80,6 +86,7 @@ public class EmailService {
     }
 
     // CORREÇÃO 3: Verifique se o método 'getAgendamento()' da sua entidade Email retorna um LocalDateTime.
+    @Transactional
     public void agendarEmail(Long emailId) {
         Email email = emailRepository.findById(emailId)
             .orElseThrow(() -> new RuntimeException("Email nao encontrado para o ID"));
