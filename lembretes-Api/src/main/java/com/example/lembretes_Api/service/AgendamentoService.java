@@ -12,7 +12,6 @@ public class AgendamentoService {
 
     private final ThreadPoolTaskScheduler taskScheduler;
 
-    // REMOVIDO: @Transactional não é permitido em construtores
     public AgendamentoService(ThreadPoolTaskScheduler taskScheduler) {
         this.taskScheduler = taskScheduler;
     }
