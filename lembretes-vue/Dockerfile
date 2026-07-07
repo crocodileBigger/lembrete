@@ -1,18 +1,20 @@
-# Stage 1: Build da aplicação
-FROM node:24-alpine
+# Estágio 1: Build da aplicação (Usando Debian Slim)
+FROM node:24-slim AS builder
 
 WORKDIR /app
 
-# Copia arquivos de dependências primeiro (otimização de cache do Docker)
 COPY package*.json ./
-
-# Instala as dependências
 RUN npm install
 
-# Copia o restante dos arquivos do projeto
 COPY . .
-
-# Executa o build (gera a pasta dist)
 RUN npm run build
 
-CMD [ "sh", "-c", "cp -r dist/* /usr/share/nginx/html" ]
+# Estágio 2: Servir os arquivos estáticos com Nginx
+FROM nginx:alpine
+
+# Copia o resultado do build do estágio anterior direto para a pasta do Nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
