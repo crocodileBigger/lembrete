@@ -33,6 +33,9 @@ public class Email {
   @Column(name = "agendamento")
   private LocalDateTime agendamento;
 
+  @Column(name = "enviado_em")
+  private LocalDateTime enviadoEm;
+
   @ManyToOne
   @JoinColumn(name = "user_id", nullable = false)
   private Usuario usuario;
@@ -41,7 +44,7 @@ public class Email {
   }
 
   // Construtor atualizado recebendo o objeto Usuario
-  public Email(String destinatario, String assunto, String mensagem,LocalDateTime agendamento, Usuario usuario) {
+  public Email(String destinatario, String assunto, String mensagem, LocalDateTime agendamento, Usuario usuario) {
     this.destinatario = destinatario;
     this.assunto = assunto;
     this.mensagem = mensagem;
@@ -49,7 +52,7 @@ public class Email {
     this.usuario = usuario;
   }
 
-  // Getter e Setter para o ID (O Maven reclamou da falta do setId no service)
+  // Getter e Setter para o ID
   public Long getId() { return id; }
   public void setId(Long id) { this.id = id; }
 
@@ -73,4 +76,8 @@ public class Email {
   public LocalDateTime getAgendamento() { return agendamento; }
   public void setAgendamento(LocalDateTime agendamento) { this.agendamento = agendamento; }
 
+  // Getters e Setters de enviadoEm (NOVO!)
+  public LocalDateTime getEnviadoEm() { return enviadoEm; }
+  public void setEnviadoEm(LocalDateTime enviadoEm) { this.enviadoEm = enviadoEm; }
 }
+

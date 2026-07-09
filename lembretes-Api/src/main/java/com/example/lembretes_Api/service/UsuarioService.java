@@ -16,10 +16,12 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Transactional
     public Optional<Usuario> pegarPorId(Long id) {
         return usuarioRepository.findById(id);
     }
 
+    @Transactional
     public List<Usuario> pegarTodos() {
         return usuarioRepository.findAll();
     }

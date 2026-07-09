@@ -1,34 +1,28 @@
 package com.example.lembretes_Api.service;
 
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.example.lembretes_Api.entidade.Email;
+import com.example.lembretes_Api.repositorio.EmailRepository;
+import com.example.lembretes_Api.repositorio.UsuarioRepository;
+import com.example.lembretes_Api.entidade.Usuario;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.List;
 
-import com.example.lembretes_Api.service.AgendamentoService;
-import com.example.lembretes_Api.repositorio.EmailRepository;
-import com.example.lembretes_Api.repositorio.UsuarioRepository;
-import com.example.lembretes_Api.entidade.Usuario;
-import com.example.lembretes_Api.entidade.Email;
-
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class EmailService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private EmailRepository emailRepository;
-
-    @Autowired
-    private JavaMailSender javaMailSender;
-
-    @Autowired
-    private AgendamentoService agendamentoService;
+    private final UsuarioRepository usuarioRepository;
+    private final EmailRepository emailRepository;
+    private final JavaMailSender javaMailSender;
+    private final AgendamentoService agendamentoService;
 
     // Buscar um email pelo id
     public Optional<Email> buscarPorId(Long id) {
@@ -51,7 +45,7 @@ public class EmailService {
         return emailRepository.save(email);
     }
 
-    // CORREÇÃO 1: Usando o nome correto da variável (emailAtualizado) de forma segura
+    // Atualizar um email
     @Transactional
     public Email atualizar(Long id, Email emailAtualizado) {
         Email emailExistente = emailRepository.findById(id)
@@ -65,15 +59,39 @@ public class EmailService {
         return emailRepository.save(emailExistente);
     }
 
-    // CORREÇÃO 2: Retornando ao seu método original que não gera erros na linha 66
+    // Deletar um email
     @Transactional
     public void deletar(Long id) {
         emailRepository.deleteById(id);
     }
     
-    // Enviar o email usando o JavaMailSender
+    /**
+     * ✅ NOVO: Envia email COM OS DADOS (chamado pelo worker/controller)
+     * Recebe dados diretamente sem buscar no BD
+     */
     @Transactional
-    public void enviarEmail(Long emailId) {
+    public void enviarEmail(String destinatario, String assunto, String mensagem) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(destinatario);
+            message.setSubject(assunto);
+            message.setText(mensagem);
+            
+            javaMailSender.send(message);
+            
+            log.info("✉️ Email enviado para: {}", destinatario);
+            
+        } catch (Exception e) {
+            log.error("❌ Erro ao enviar email", e);
+            throw new RuntimeException("Erro ao enviar email", e);
+        }
+    }
+
+    /**
+     * LEGACY: Envia email pelo ID (compatibilidade com código antigo)
+     */
+    @Transactional
+    public void enviarEmailPorId(Long emailId) {
        Email email = emailRepository.findById(emailId)
            .orElseThrow(() -> new IllegalArgumentException("Email não encontrado para o ID"));
        
@@ -83,17 +101,21 @@ public class EmailService {
         message.setText(email.getMensagem());
 
         javaMailSender.send(message);
+        
+        // Marca como enviado
+        email.setEnviadoEm(LocalDateTime.now());
+        emailRepository.save(email);
     }
 
-    // CORREÇÃO 3: Verifique se o método 'getAgendamento()' da sua entidade Email retorna um LocalDateTime.
+    // Agendar email existente para envio futuro
     @Transactional
     public void agendarEmail(Long emailId) {
         Email email = emailRepository.findById(emailId)
             .orElseThrow(() -> new RuntimeException("Email nao encontrado para o ID"));
         
-        // Garanta que o segundo parâmetro seja o LocalDateTime esperado pelo AgendamentoService
         agendamentoService.agendarTarefa(email.getAgendamento(),
-            () -> enviarEmail(email.getId())
+            () -> enviarEmailPorId(email.getId())
         );
     }
 }
+
