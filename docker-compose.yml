@@ -5,8 +5,14 @@ services:
     container_name: gateway_nginx
     ports:
       - "8000:8000"
+      - "443:443"
     volumes:
-      - /home/bigg/Documentos/sprint/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx-proxy/nginx-default.conf:/etc/nginx/conf.d/default.conf:ro
+      # inclui o script de certificação
+      - ./nginx-proxy/certification-entrypoint.sh:/certification-entrypoint.sh:ro
+      # inclui os arquivos de certificação
+      - certs-data:/etc/letsencrypt
+    entrypoint: ["/certification-entrypoint.sh"]
     depends_on:
       - spring-app
       - vue-app
@@ -45,11 +51,12 @@ services:
       - pgdata:/var/lib/postgresql/data
     networks:
       - app-network
-
 networks:
   app-network:
     driver: bridge
 
+# Volumes
 volumes:
   pgdata:
     driver: local
+  certs-data:
