@@ -1,5 +1,4 @@
-# Estágio 1: Build da aplicação (Usando Debian Slim)
-FROM node:24-slim AS builder
+FROM node:24-slim
 
 WORKDIR /app
 
@@ -7,14 +6,8 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
-RUN npm run build
 
-# Estágio 2: Servir os arquivos estáticos com Nginx
-FROM nginx:alpine
+EXPOSE 5173
 
-# Copia o resultado do build do estágio anterior direto para a pasta do Nginx
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+# O servidor do Vite roda como o processo principal (CMD), não travando o build
+CMD ["npm", "run", "dev"]
