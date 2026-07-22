@@ -1,5 +1,8 @@
 <script setup>
 import { ref } from 'vue'
+import { RouterLink } from 'vue-router'
+import BaseInput from '../components/BaseInput.vue'
+import AuthForm from '../components/AuthForm.vue'
 
 // Estado reativo dos campos
 const name = ref('')
@@ -50,146 +53,82 @@ const handleRegister = async () => {
 </script>
 
 <template>
-  <div class="navigation-area">
-    <p>Já possui uma conta?</p>
-    <RouterLink to="/" class="btn-secondary">Voltar para o Login</RouterLink>
-  </div>
-  <div class="register-container">
-    <h2>Criar Conta</h2>
+  <!-- Container Principal: Centraliza a tela inteira -->
+  <div class="min-h-screen flex items-center justify-center bg-stone-100 p-10 sm:p-10">
 
-    <form @submit.prevent="handleRegister">
+    <!-- Wrapper da área de cadastro -->
+    <div class="w-full max-w-3xl space-y-4">
 
-      <div class="form-group">
-        <label for="name">Nome Completo:</label>
-        <input
+      <AuthForm
+        title="Criar Conta"
+        subtitle="Preencha os dados abaixo para se cadastrar"
+        :is-loading="isLoading"
+        :error-message="errorMessage"
+        submit-text="Cadastrar"
+        loading-text="Cadastrando..."
+        @submit="handleRegister"
+      >
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Campo Nome Completo -->
+        <BaseInput
           id="name"
           v-model.trim="name"
           type="text"
+          label="Nome Completo:"
+          placeholder="Seu nome"
           required
         />
-      </div>
 
-      <div class="form-group">
-        <label for="email">E-mail (Gmail):</label>
-        <input
+        <!-- Campo E-mail -->
+        <BaseInput
           id="email"
           v-model.trim="email"
           type="email"
+          label="E-mail (Gmail):"
+          placeholder="seuemail@gmail.com"
           required
         />
-      </div>
 
-      <div class="form-group">
-        <label for="password">Senha:</label>
-        <input
+        <!-- Campo Senha -->
+        <BaseInput
           id="password"
           v-model="password"
           type="password"
+          label="Senha:"
+          placeholder="Sua senha"
+          required
+        />
+
+        <!-- Campo Confirmar Senha -->
+        <BaseInput
+          id="ConfirmPassword"
+          v-model="ConfirmPassword"
+          type="password"
+          label="Confirmar Senha:"
+          placeholder="Confirmar Sua senha"
           required
         />
       </div>
+        <!-- Feedback de Sucesso (Se houver) -->
+        <div
+          v-if="successMessage"
+          class="p-3 text-sm text-emerald-800 bg-emerald-100/80 rounded-xl border border-emerald-200 font-medium text-center"
+        >
+          {{ successMessage }}
+        </div>
 
-      <!-- Feedbacks visuais -->
-      <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
-      <p v-if="successMessage" class="success-text">{{ successMessage }}</p>
+        <!-- Área de Navegação Interna do Card (Voltar para o Login) -->
+        <div class="pt-4 border-t border-stone-200 text-center space-y-3">
+          <RouterLink
+            to="/"
+            class="block w-full py-2.5 px-4 text-sm font-semibold text-stone-700 bg-transparent border border-stone-300 hover:bg-stone-200/60 rounded-xl transition-colors duration-150 text-center"
+          >
+            Voltar para o Login
+          </RouterLink>
+        </div>
+      </AuthForm>
 
-      <button type="submit" :disabled="isLoading">
-        {{ isLoading ? 'Cadastrando...' : 'Cadastrar' }}
-      </button>
+    </div>
 
-    </form>
   </div>
 </template>
-
-<style scoped>
-
-.navigation-area {
-  margin-top: 20px;
-  text-align: center;
-  border-top: 1px solid #eee;
-  padding-top: 15px;
-}
-
-.navigation-area p {
-  margin-bottom: 8px;
-  font-size: 0.9rem;
-  color: #666;
-}
-
-/* Transforma o RouterLink (que gera uma tag <a>) em um botão visual */
-.btn-secondary {
-  display: block;
-  width: 100%;
-  padding: 8px;
-  box-sizing: border-box;
-  border: 1px solid #35495e;
-  color: #35495e;
-  background: transparent;
-  border-radius: 4px;
-  text-align: center;
-  text-decoration: none;
-  font-weight: bold;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-secondary:hover {
-  background: #f4f6f8;
-}
-
-.register-container {
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-family: sans-serif;
-}
-
-.form-group {
-  margin-bottom: 15px;
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group label {
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
-.form-group input {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.error-text {
-  color: #d9534f;
-  font-size: 0.9rem;
-  margin-top: 5px;
-}
-
-.success-text {
-  color: #5cb85c;
-  font-size: 0.9rem;
-  margin-top: 5px;
-  font-weight: bold;
-}
-
-button {
-  width: 100%;
-  padding: 10px;
-  background-color: #35495e; /* Azul escuro do ecossistema Vue */
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-button:disabled {
-  background-color: #929fae;
-  cursor: not-allowed;
-}
-</style>

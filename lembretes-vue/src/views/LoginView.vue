@@ -1,5 +1,7 @@
 <script setup>
 import { ref } from 'vue'
+import BaseInput from '../components/BaseInput.vue'
+import BaseButton from '../components/AuthForm.vue'
 
 // Estado reativo dos campos do formulário
 const name = ref('')
@@ -43,106 +45,49 @@ const handleLogin = async () => {
 </script>
 
 <template>
-  <div class="login-container">
-    <h2>Acessar Conta</h2>
+  <div class="min-h-screen flex items-center justify-center bg-stone-100 p-4 sm:p-6">
+    <div class="w-full max-w-md space-y-4">
+      <h2>Acessar Conta</h2>
 
-    <!-- O modificador .prevent evita o recarregamento padrão da página -->
-    <form @submit.prevent="handleLogin">
+      <!-- O modificador .prevent evita o recarregamento padrão da página -->
+      <AuthForm
+        title="Acessar Conta"
+        subtitle="Entre com suas credenciais do Gmail"
+        :is-loading="isLoading"
+        :error-message="errorMessage"
+        submit-text="Entrar"
+        loading-text="Autenticando..."
+        @submit="handleLogin"
+      >
 
-      <div class="form-group">
-        <label for="name">Nome:</label>
-        <input
-          id="name"
-          v-model.trim="name"
-          type="text"
-          placeholder="Seu nome completo"
-          required
-        />
-      </div>
-
-      <div class="form-group">
-        <label for="email">E-mail (Gmail):</label>
-        <input
+        <BaseInput
           id="email"
           v-model.trim="email"
           type="email"
+          label="E-mail (Gmail):"
           placeholder="seuemail@gmail.com"
           required
         />
-      </div>
 
-      <div class="form-group">
-        <label for="password">Senha:</label>
-        <input
+        <BaseInput
           id="password"
           v-model="password"
           type="password"
+          label="Senha:"
           placeholder="Sua senha"
           required
         />
+
+        <button type="submit" :disabled="isLoading">
+          {{ isLoading ? 'Autenticando...' : 'Entrar' }}
+        </button>
+
+      </AuthForm>
+
+      <div class="navigation-area">
+        <p>Não tem uma conta?</p>
+        <RouterLink to="/cadastro" class="btn-secondary">Criar Conta</RouterLink>
       </div>
-
-      <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
-
-      <button type="submit" :disabled="isLoading">
-        {{ isLoading ? 'Autenticando...' : 'Entrar' }}
-      </button>
-
-    </form>
-    <div class="navigation-area">
-      <p>Não tem uma conta?</p>
-      <RouterLink to="/cadastro" class="btn-secondary">Criar Conta</RouterLink>
     </div>
   </div>
 </template>
-
-<style scoped>
-/* Estilização estrutural básica */
-.login-container {
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-family: sans-serif;
-}
-
-.form-group {
-  margin-bottom: 15px;
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group label {
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
-.form-group input {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.error-text {
-  color: #d9534f;
-  font-size: 0.9rem;
-  margin-top: 5px;
-}
-
-button {
-  width: 100%;
-  padding: 10px;
-  background-color: #42b883; /* Cor padrão do Vue */
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-button:disabled {
-  background-color: #a3e0c2;
-  cursor: not-allowed;
-}
-</style>
