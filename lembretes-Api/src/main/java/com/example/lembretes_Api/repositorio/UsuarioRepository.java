@@ -2,9 +2,13 @@ package com.example.lembretes_Api.repositorio;
 
 import com.example.lembretes_Api.entidade.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import java.util.Optional;
 
-@Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
-  boolean existsByEmail(String email);
+    
+    // Método necessário para SecurityConfig, AuthService e buscas
+    Optional<Usuario> findByEmail(String email);
+    
+    // Método booleano necessário para a validação no UsuarioService
+    boolean existsByEmail(String email);
 }
