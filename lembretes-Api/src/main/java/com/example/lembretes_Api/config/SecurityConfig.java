@@ -21,6 +21,14 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.OctetSequenceKey;
+import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -32,14 +40,18 @@ public class SecurityConfig {
     @Value("${jwt.secret}")
     private String secret;
 
+    // Define a cadeia de filtros de segurança (Security Filter Chain) da aplicação HTTP
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            // Desabilita CSRF (Cross-Site Request Forgery) pois a API é stateless via JWT
             .csrf(AbstractHttpConfigurer::disable)
-            .cors(cors -> cors.configure(http)) // Libera CORS para evitar erro 401/403 no pre-flight
+            // Configura a gestão de sessão para STATELESS (sem estado no servidor)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // Regras de autorização de requisições HTTP
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Libera pre-flight requests do navegador
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                // Endpoints públicos
                 .requestMatchers(
                     "/auth/**",
                     "/api/usuario/**",
@@ -50,6 +62,7 @@ public class SecurityConfig {
                 ).permitAll()
                 .anyRequest().authenticated()
             )
+    // Configura a API como OAuth2 Resource Server para validar tokens JWT recebidos no header
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> 
                 jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())
             ));
@@ -57,12 +70,26 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // Configura o decodificador JWT usando chave simétrica (HMAC-SHA) 
+    // para decodificar e validar a assinatura do token
     @Bean
     public JwtDecoder jwtDecoder() {
         SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         return NimbusJwtDecoder.withSecretKey(key).build();
     }
 
+    // Configura o codificador JWT (Nimbus) usando 
+    // a mesma chave simétrica para gerar/assinar novos tokens
+    @Bean
+    public JwtEncoder jwtEncoder() {
+            SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+                var jwk = new OctetSequenceKey.Builder(key).build();
+                    JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
+                        return new NimbusJwtEncoder(jwks);
+    }
+
+    // Converte a claim "roles" contida dentro da 
+    // payload do JWT em instâncias de GrantedAuthority do Spring Security
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         var converter = new JwtAuthenticationConverter();
@@ -76,6 +103,8 @@ public class SecurityConfig {
         return converter;
     }
 
+    // Carrega os dados do usuário a partir do banco de dados 
+    // (via email) durante a autenticação
     @Bean
     public UserDetailsService userDetailsService(UsuarioRepository usuarioRepository) {
         return username -> usuarioRepository.findByEmail(username)
@@ -89,11 +118,15 @@ public class SecurityConfig {
             .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + username));
     }
 
+    // Define o algoritmo de hashing de senhas (BCrypt)
+    // para verificação e armazenamento seguro
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // Exporta o AuthenticationManager padrão do Spring Security
+    // para ser usado na controller de login
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
