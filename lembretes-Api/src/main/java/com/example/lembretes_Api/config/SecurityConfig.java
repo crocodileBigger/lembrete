@@ -28,7 +28,8 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
-
+import com.nimbusds.jose.JWSAlgorithm;
+import javax.crypto.spec.SecretKeySpec;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -82,10 +83,12 @@ public class SecurityConfig {
     // a mesma chave simétrica para gerar/assinar novos tokens
     @Bean
     public JwtEncoder jwtEncoder() {
-            SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-                var jwk = new OctetSequenceKey.Builder(key).build();
-                    JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
-                        return new NimbusJwtEncoder(jwks);
+        SecretKey key = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        OctetSequenceKey jwk = new OctetSequenceKey.Builder(key)
+                .algorithm(JWSAlgorithm.HS256)
+                .build();
+        JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
+        return new NimbusJwtEncoder(jwks);
     }
 
     // Converte a claim "roles" contida dentro da 

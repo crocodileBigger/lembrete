@@ -2,6 +2,7 @@ package com.example.lembretes_Api.service;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -22,12 +23,10 @@ public class TokenService {
     public String generateToken(Authentication authentication) {
         Instant now = Instant.now();
 
-        // Extrai as roles do objeto de autenticação
         List<String> roles = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
 
-        // Monta o payload do JWT respeitando o claim "roles" lido no JwtAuthenticationConverter
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("lembretes-api")
                 .issuedAt(now)
@@ -36,6 +35,10 @@ public class TokenService {
                 .claim("roles", roles)
                 .build();
 
-        return encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        // 1. Cria o header forçando o algoritmo HS256
+        JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
+
+        // 2. Passa o header junto com os claims
+        return encoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
     }
 }
