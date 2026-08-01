@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.lembretes_Api.dto.EmailDTOs.EmailrequestDTO;
 import com.example.lembretes_Api.entidade.Email;
 import com.example.lembretes_Api.service.EmailService;
 import java.util.List;
@@ -17,50 +18,50 @@ public class EmailController {
     private EmailService emailService;
 
     // Buscar email pelo ID do próprio e-mail
-    @GetMapping("/{id}")
-    public ResponseEntity<Email> getEmailById(@PathVariable Long id) {
-        return emailService.buscarPorId(id)
+    @GetMapping("/buscar")
+    public ResponseEntity<Email> getEmailById(@RequestBody EmailrequestDTO dto) {
+        return emailService.buscarPorId(dto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     // Buscar todos os e-mails associados a um usuário específico
     // Rota alterada para evitar conflito com a rota acima
-    @GetMapping("/usuario/{userId}")
-    public ResponseEntity<List<Email>> getEmailsByUserId(@PathVariable Long userId) {
-        List<Email> emails = emailService.buscarPorUsuarioId(userId);
+    @GetMapping("/usuario/emails")
+    public ResponseEntity<List<Email>> getEmailsByUserId(@RequestBody EmailrequestDTO dto) {
+        List<Email> emails = emailService.buscarPorUsuarioId(dto);
         return ResponseEntity.ok(emails);
     }
 
     @PostMapping("/criar")
-    public ResponseEntity<Email> createEmail(@RequestBody Email email, @RequestParam Long userId) {
-        Email savedEmail = emailService.salvar(email, userId);
+    public ResponseEntity<Email> createEmail(@RequestBody EmailrequestDTO dto) {
+        Email savedEmail = emailService.salvar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedEmail);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Email> updateEmail(@PathVariable Long id, @RequestBody Email email) {
-        Email updatedEmail = emailService.atualizar(id, email);
+    @PutMapping("/atualizar")
+    public ResponseEntity<Email> updateEmail(@RequestBody EmailrequestDTO dto) {
+        Email updatedEmail = emailService.atualizar(dto);
         return ResponseEntity.ok(updatedEmail);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEmail(@PathVariable Long id) {
-        emailService.deletar(id);
+    @DeleteMapping("/deletar")
+    public ResponseEntity<Void> deleteEmail(@RequestBody EmailrequestDTO dto) {
+        emailService.deletar(dto);
         return ResponseEntity.noContent().build();
     }
 
     //enviar email para o destinatario
-    @PostMapping("/enviar/{emailId}")
-    public ResponseEntity<Void> enviarEmail(@PathVariable Long emailId) {
-        emailService.enviarEmail(emailId);
+    @PostMapping("/enviar")
+    public ResponseEntity<Void> enviarEmail(@RequestBody EmailrequestDTO dto) {
+        emailService.enviarEmail(dto);
         return ResponseEntity.ok().build();
     }
 
     //agendar email existente para o destinatario basiado no ID
-    @PostMapping("/agendar/{emailId}")
-    public ResponseEntity<Void> agendarEmail(@PathVariable Long emailId) {
-        emailService.agendarEmail(emailId);
+    @PostMapping("/agendar")
+    public ResponseEntity<Void> agendarEmail(@RequestBody EmailrequestDTO dto) {
+        emailService.agendarEmail(dto);
         return ResponseEntity.ok().build();
     }
 }

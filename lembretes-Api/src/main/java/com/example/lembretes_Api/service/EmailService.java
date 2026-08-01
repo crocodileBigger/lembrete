@@ -1,19 +1,18 @@
 package com.example.lembretes_Api.service;
 
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.List;
-
-import com.example.lembretes_Api.service.AgendamentoService;
-import com.example.lembretes_Api.repositorio.EmailRepository;
-import com.example.lembretes_Api.repositorio.UsuarioRepository;
 import com.example.lembretes_Api.entidade.Usuario;
 import com.example.lembretes_Api.entidade.Email;
+import com.example.lembretes_Api.dto.EmailDTOs.EmailrequestDTO;
+import com.example.lembretes_Api.repositorio.UsuarioRepository;
+import com.example.lembretes_Api.repositorio.EmailRepository;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EmailService {
@@ -30,53 +29,63 @@ public class EmailService {
     @Autowired
     private AgendamentoService agendamentoService;
 
-    // Buscar um email pelo id
-    public Optional<Email> buscarPorId(Long id) {
-        return emailRepository.findById(id);
+    // Buscar email por ID vindo do DTO
+    @Transactional(readOnly = true)
+    public Optional<Email> buscarPorId(EmailrequestDTO dto) {
+        return emailRepository.findById(dto.id());
     }
 
-    // Buscar todos os emails de um usuario
-    @Transactional
-    public List<Email> buscarPorUsuarioId(Long userId) {
-        return emailRepository.findByUsuarioId(userId);
+    // Buscar todos os emails de um usuário pelo ID do usuário no DTO
+    @Transactional(readOnly = true)
+    public List<Email> buscarPorUsuarioId(EmailrequestDTO dto) {
+        return emailRepository.findByUsuarioId(dto.usuarioId());
     }
 
-    // Salvar um email
+    // Criar/Salvar email extraindo dados e ID do usuário via DTO
     @Transactional
-    public Email salvar(Email email, Long userId) {
-        Usuario usuario = usuarioRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("Usuário nao encontrado"));
-       
+    public Email salvar(EmailrequestDTO dto) {
+        Usuario usuario = usuarioRepository.findById(dto.usuarioId())
+            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+        Email email = new Email();
+        email.setDestinatario(dto.destinatario());
+        email.setAssunto(dto.assunto());
+        email.setMensagem(dto.mensagem());
+        email.setAgendamento(dto.agendamento());
         email.setUsuario(usuario);
+
         return emailRepository.save(email);
     }
 
-    // CORREÇÃO 1: Usando o nome correto da variável (emailAtualizado) de forma segura
+    // Atualizar email extraindo os dados e o ID do email via DTO
     @Transactional
-    public Email atualizar(Long id, Email emailAtualizado) {
-        Email emailExistente = emailRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Email não encontrado para o ID: " + id));
-        
-        emailExistente.setDestinatario(emailAtualizado.getDestinatario());
-        emailExistente.setAssunto(emailAtualizado.getAssunto());
-        emailExistente.setMensagem(emailAtualizado.getMensagem());
-        emailExistente.setAgendamento(emailAtualizado.getAgendamento());
+    public Email atualizar(EmailrequestDTO dto) {
+        Email emailExistente = emailRepository.findById(dto.id())
+            .orElseThrow(() -> new IllegalArgumentException("Email não encontrado para o ID: " + dto.id()));
+
+        emailExistente.setDestinatario(dto.destinatario());
+        emailExistente.setAssunto(dto.assunto());
+        emailExistente.setMensagem(dto.mensagem());
+        emailExistente.setAgendamento(dto.agendamento());
 
         return emailRepository.save(emailExistente);
     }
 
-    // CORREÇÃO 2: Retornando ao seu método original que não gera erros na linha 66
+    // Deletar extraindo o ID via DTO
     @Transactional
-    public void deletar(Long id) {
-        emailRepository.deleteById(id);
+    public void deletar(EmailrequestDTO dto) {
+        if (!emailRepository.existsById(dto.id())) {
+            throw new IllegalArgumentException("Email não encontrado para deleção.");
+        }
+        emailRepository.deleteById(dto.id());
     }
-    
-    // Enviar o email usando o JavaMailSender
+
+    // Enviar email acessando o ID via DTO
     @Transactional
-    public void enviarEmail(Long emailId) {
-       Email email = emailRepository.findById(emailId)
-           .orElseThrow(() -> new IllegalArgumentException("Email não encontrado para o ID"));
-       
+    public void enviarEmail(EmailrequestDTO dto) {
+        Email email = emailRepository.findById(dto.id())
+            .orElseThrow(() -> new IllegalArgumentException("Email não encontrado para envio"));
+
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email.getDestinatario());
         message.setSubject(email.getAssunto());
@@ -85,15 +94,15 @@ public class EmailService {
         javaMailSender.send(message);
     }
 
-    // CORREÇÃO 3: Verifique se o método 'getAgendamento()' da sua entidade Email retorna um LocalDateTime.
+    // Agendar email acessando o ID via DTO
     @Transactional
-    public void agendarEmail(Long emailId) {
-        Email email = emailRepository.findById(emailId)
-            .orElseThrow(() -> new RuntimeException("Email nao encontrado para o ID"));
-        
-        // Garanta que o segundo parâmetro seja o LocalDateTime esperado pelo AgendamentoService
-        agendamentoService.agendarTarefa(email.getAgendamento(),
-            () -> enviarEmail(email.getId())
+    public void agendarEmail(EmailrequestDTO dto) {
+        Email email = emailRepository.findById(dto.id())
+            .orElseThrow(() -> new RuntimeException("Email não encontrado para agendamento"));
+
+        agendamentoService.agendarTarefa(
+            email.getAgendamento(),
+            () -> enviarEmail(dto)
         );
     }
 }
