@@ -14,6 +14,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import com.example.lembretes_Api.service.TokenService; // Ajuste se o pacote for diferente
 import java.util.Map;
+import com.example.lembretes_Api.dto.UsuarioDTOs.UsuarioRequestDTO;
+import com.example.lembretes_Api.entidade.Usuario;
+import com.example.lembretes_Api.service.UsuarioService;
+import java.util.List;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -22,6 +28,7 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
+    private final UsuarioService usuarioService;
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest dto) {
@@ -30,5 +37,19 @@ public class AuthController {
 
         String token = tokenService.generateToken(auth);
         return ResponseEntity.ok(Map.of("token", token));
+    }
+
+    // Criar um usuario
+    @PostMapping("/usuarioCriar")
+    public ResponseEntity<Usuario> createUsuario(@RequestBody UsuarioRequestDTO dto) {
+        Usuario savedUsuario = usuarioService.salvar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedUsuario);
+    }
+    
+    // usado para teste (não tera no projeto final)
+    // Pegar todos os usuarios
+    @GetMapping("/usuarioAll")
+    public ResponseEntity<List<Usuario>> getAllUsuarios() {
+        return ResponseEntity.ok(usuarioService.pegarTodos());
     }
 }

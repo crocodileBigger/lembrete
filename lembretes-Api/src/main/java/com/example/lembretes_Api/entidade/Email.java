@@ -10,8 +10,10 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Column;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn; 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
-import java.util.Date;
+import java.util.Objects;
 import java.time.LocalDateTime;
 
 @Entity
@@ -21,15 +23,19 @@ public class Email {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @NotBlank
   @Column(name = "destinatario")
   private String destinatario;
   
+  @NotBlank
   @Column(name = "assunto")
   private String assunto;
   
+  @NotBlank
   @Column(name = "mensagem")
   private String mensagem;
 
+  @NotNull
   @Column(name = "agendamento")
   private LocalDateTime agendamento;
 
@@ -41,13 +47,13 @@ public class Email {
   }
 
   // Construtor atualizado recebendo o objeto Usuario
-  public Email(String destinatario, String assunto, String mensagem,LocalDateTime agendamento, Usuario usuario) {
-    this.destinatario = destinatario;
-    this.assunto = assunto;
-    this.mensagem = mensagem;
-    this.agendamento = agendamento;
-    this.usuario = usuario;
-  }
+    public Email(String destinatario, String assunto, String mensagem, LocalDateTime agendamento, Usuario usuario) {
+        this.destinatario = Objects.requireNonNull(destinatario, "Destinatário é obrigatório");
+        this.assunto = Objects.requireNonNull(assunto, "Assunto é obrigatório");
+        this.mensagem = Objects.requireNonNull(mensagem, "Mensagem é obrigatória");
+        this.agendamento = Objects.requireNonNull(agendamento, "Agendamento é obrigatório");
+        this.usuario = Objects.requireNonNull(usuario, "Usuário é obrigatório");
+    }
 
   // Getter e Setter para o ID (O Maven reclamou da falta do setId no service)
   public Long getId() { return id; }

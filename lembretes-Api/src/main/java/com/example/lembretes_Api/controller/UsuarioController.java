@@ -27,19 +27,6 @@ public class UsuarioController {
                 .orElse(ResponseEntity.notFound().build()); // Retorna 404 se não existir
     }
 
-    // Pegar todos os usuarios
-    @GetMapping("/all")
-    public ResponseEntity<List<Usuario>> getAllUsuarios() {
-        return ResponseEntity.ok(usuarioService.pegarTodos());
-    }
-
-    // Criar um usuario
-    @PostMapping("/criar")
-    public ResponseEntity<Usuario> createUsuario(@RequestBody UsuarioRequestDTO dto) {
-        Usuario savedUsuario = usuarioService.salvar(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedUsuario);
-    }
-
     // Atualizar um usuario
     @PutMapping("/atualizar")
     public ResponseEntity<Usuario> updateUsuario(@RequestBody UsuarioRequestDTO dto) {

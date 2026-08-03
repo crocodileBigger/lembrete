@@ -1,45 +1,51 @@
 package com.example.lembretes_Api.entidade;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Table;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
-@Table(name = "usuarios")
+@Table(name = "Usuario")
 public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false)
+    @NotBlank
+    @Column(name = "name")
     private String name;
 
+    @NotBlank
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password", nullable = false)
+    @NotBlank
+    @Column(name = "password")
     private String password;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Column(name = "role")
-    private Set<String> roles = new HashSet<>(); // Inicializado para evitar NullPointerException
+    private Set<String> role = new HashSet<>();
 
     public Usuario() {
     }
 
     public Usuario(String name, String email, String password) {
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        this.roles.add("ROLE_USER"); // Role padrão para novos cadastros
+        this.name = Objects.requireNonNull(name, "Nome é obrigatório");
+        this.email = Objects.requireNonNull(email, "Email é obrigatório");
+        this.password = Objects.requireNonNull(password, "Senha é obrigatória");
+        this.role.add("ROLE_USER");
     }
 
     // Getters e Setters
@@ -55,6 +61,6 @@ public class Usuario {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-    public Set<String> getRoles() { return roles; }
-    public void setRoles(Set<String> roles) { this.roles = roles; }
+    public Set<String> getRoles() { return role; }
+    public void setRole(Set<String> role) { this.role = role; }
 }

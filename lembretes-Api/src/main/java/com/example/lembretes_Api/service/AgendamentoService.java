@@ -1,22 +1,20 @@
 package com.example.lembretes_Api.service;
 
-import org.springframework.transaction.annotation.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
 @Service
+@RequiredArgsConstructor 
 public class AgendamentoService {
 
     private final ThreadPoolTaskScheduler taskScheduler;
 
-    public AgendamentoService(ThreadPoolTaskScheduler taskScheduler) {
-        this.taskScheduler = taskScheduler;
-    }
-
-    @Transactional // Mantenha aqui apenas se este método salvar/alterar dados no banco
+    @Transactional
     public void agendarTarefa(LocalDateTime agendamento, Runnable tarefa) {
         Date dataDisparo = Date.from(agendamento.atZone(ZoneId.systemDefault()).toInstant());
         taskScheduler.schedule(tarefa, dataDisparo);

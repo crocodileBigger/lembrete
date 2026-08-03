@@ -1,47 +1,41 @@
 package com.example.lembretes_Api.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.lembretes_Api.dto.EmailDTOs.EmailrequestDTO;
+import com.example.lembretes_Api.entidade.Email;
+import com.example.lembretes_Api.entidade.Usuario;
+import com.example.lembretes_Api.repositorio.EmailRepository;
+import com.example.lembretes_Api.repositorio.UsuarioRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.SimpleMailMessage;
-import com.example.lembretes_Api.entidade.Usuario;
-import com.example.lembretes_Api.entidade.Email;
-import com.example.lembretes_Api.dto.EmailDTOs.EmailrequestDTO;
-import com.example.lembretes_Api.repositorio.UsuarioRepository;
-import com.example.lembretes_Api.repositorio.EmailRepository;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class EmailService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final EmailRepository emailRepository;
+    private final JavaMailSender javaMailSender;
+    private final AgendamentoService agendamentoService;
 
-    @Autowired
-    private EmailRepository emailRepository;
-
-    @Autowired
-    private JavaMailSender javaMailSender;
-
-    @Autowired
-    private AgendamentoService agendamentoService;
-
-    // Buscar email por ID vindo do DTO
+    // Buscar email por ID
     @Transactional(readOnly = true)
     public Optional<Email> buscarPorId(EmailrequestDTO dto) {
         return emailRepository.findById(dto.id());
     }
 
-    // Buscar todos os emails de um usuário pelo ID do usuário no DTO
+    // Buscar todos os emails de um usuário
     @Transactional(readOnly = true)
     public List<Email> buscarPorUsuarioId(EmailrequestDTO dto) {
         return emailRepository.findByUsuarioId(dto.usuarioId());
     }
 
-    // Criar/Salvar email extraindo dados e ID do usuário via DTO
+    // Criar/Salvar email
     @Transactional
     public Email salvar(EmailrequestDTO dto) {
         Usuario usuario = usuarioRepository.findById(dto.usuarioId())
@@ -57,7 +51,7 @@ public class EmailService {
         return emailRepository.save(email);
     }
 
-    // Atualizar email extraindo os dados e o ID do email via DTO
+    // Atualizar email
     @Transactional
     public Email atualizar(EmailrequestDTO dto) {
         Email emailExistente = emailRepository.findById(dto.id())
@@ -71,7 +65,7 @@ public class EmailService {
         return emailRepository.save(emailExistente);
     }
 
-    // Deletar extraindo o ID via DTO
+    // Deletar email
     @Transactional
     public void deletar(EmailrequestDTO dto) {
         if (!emailRepository.existsById(dto.id())) {
@@ -80,7 +74,7 @@ public class EmailService {
         emailRepository.deleteById(dto.id());
     }
 
-    // Enviar email acessando o ID via DTO
+    // Enviar email
     @Transactional
     public void enviarEmail(EmailrequestDTO dto) {
         Email email = emailRepository.findById(dto.id())
@@ -94,11 +88,11 @@ public class EmailService {
         javaMailSender.send(message);
     }
 
-    // Agendar email acessando o ID via DTO
+    // Agendar email
     @Transactional
     public void agendarEmail(EmailrequestDTO dto) {
         Email email = emailRepository.findById(dto.id())
-            .orElseThrow(() -> new RuntimeException("Email não encontrado para agendamento"));
+            .orElseThrow(() -> new IllegalArgumentException("Email não encontrado para agendamento"));
 
         agendamentoService.agendarTarefa(
             email.getAgendamento(),
