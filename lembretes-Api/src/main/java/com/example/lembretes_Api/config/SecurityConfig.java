@@ -38,8 +38,11 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-    @Value("${jwt.secret}")
-    private String secret;
+    private final SecretKey secretKey;
+
+    public SecurityConfig(SecretKey secretKey) {
+        this.secretKey = secretKey;
+    }
 
     // Define a cadeia de filtros de segurança (Security Filter Chain) da aplicação HTTP
     @Bean
@@ -57,7 +60,8 @@ public class SecurityConfig {
                     "/auth/**",
                     "/docs",
                     "/v3/api-docs/**",
-                    "/error"
+                    "/error",
+                    "/swagger-ui/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
@@ -73,16 +77,14 @@ public class SecurityConfig {
     // para decodificar e validar a assinatura do token
     @Bean
     public JwtDecoder jwtDecoder() {
-        SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        return NimbusJwtDecoder.withSecretKey(key).build();
+        return NimbusJwtDecoder.withSecretKey(secretKey).build();
     }
 
     // Configura o codificador JWT (Nimbus) usando 
     // a mesma chave simétrica para gerar/assinar novos tokens
     @Bean
     public JwtEncoder jwtEncoder() {
-        SecretKey key = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-        OctetSequenceKey jwk = new OctetSequenceKey.Builder(key)
+        OctetSequenceKey jwk = new OctetSequenceKey.Builder(secretKey)
                 .algorithm(JWSAlgorithm.HS256)
                 .build();
         JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
